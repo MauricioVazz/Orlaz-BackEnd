@@ -1,0 +1,24 @@
+{
+  "name": "orlaz-back",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.16.1",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.5",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "prisma": "^6.16.1"
+  }
+}
