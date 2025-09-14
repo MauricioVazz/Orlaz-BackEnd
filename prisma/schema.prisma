@@ -33,3 +33,35 @@ model Favorite {
   placeId   Int      // ID do ponto turístico favoritado
   createdAt DateTime @default(now())
 }
+
+model TouristSpot {
+  id          Int      @id @default(autoincrement())
+  name        String   // Nome obrigatório
+  description String   // Descrição obrigatória
+  images      TouristSpotImage[] // Relação com imagens
+  city        City     // Cidade (enum)
+  type        SpotType // Tipo de ponto (enum)
+  canFavorite Boolean  @default(true) // Pode ser favoritado
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TouristSpotImage {
+  id            Int         @id @default(autoincrement())
+  url           String     // URL da imagem
+  touristSpot   TouristSpot @relation(fields: [touristSpotId], references: [id])
+  touristSpotId Int
+}
+
+enum City {
+  CARAGUATATUBA
+  UBATUBA
+  SAO_SEBASTIAO
+  ILHABELA
+}
+
+enum SpotType {
+  PRAIA
+  URBANO
+  NATUREZA
+}
