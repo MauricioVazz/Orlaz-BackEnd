@@ -9,7 +9,6 @@ import { deleteRestaurantController } from '../controller/restaurant/deleteResta
 const router = express.Router();
 
 router.post('/', createRestaurantController);
-// Rota de teste para criar restaurante com múltiplas imagens
 router.post('/with-images', createRestaurantWithImagesController);
 router.get('/:id', getByIdRestaurantController);
 router.get('/', getAllRestaurantController);
