@@ -1,5 +1,6 @@
 import express from 'express';
 import { createRestaurantController } from '../controller/restaurant/createRestaurantController.js';
+import { createRestaurantWithImagesController } from '../controller/restaurant/createRestaurantWithImagesController.js';
 import { getByIdRestaurantController } from '../controller/restaurant/getByIdRestaurantController.js';
 import { editRestaurantController } from '../controller/restaurant/editRestaurantController.js';
 import { getAllRestaurantController } from '../controller/restaurant/getAllRestaurantController.js';
@@ -8,6 +9,8 @@ import { deleteRestaurantController } from '../controller/restaurant/deleteResta
 const router = express.Router();
 
 router.post('/', createRestaurantController);
+// Rota de teste para criar restaurante com múltiplas imagens
+router.post('/with-images', createRestaurantWithImagesController);
 router.get('/:id', getByIdRestaurantController);
 router.get('/', getAllRestaurantController);
 router.patch('/:id', editRestaurantController);
