@@ -9,6 +9,7 @@ export const deleteFavoriteController = async (req, res) => {
             result: result
         });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Erro ao deletar favorito" });
     }
 }

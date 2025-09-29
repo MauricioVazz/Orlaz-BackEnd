@@ -23,8 +23,8 @@ export const listByPlace = async (placeId) => {
     });
 };
 
-export const remove = async (userId, id) => {
-    return await prisma.favorite.delete({
+export const remove = async (id, userId) => {
+    return await prisma.favorite.deleteMany({
         where: {
             id,
             userId
