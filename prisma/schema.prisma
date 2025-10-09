@@ -97,8 +97,17 @@ enum City {
   ILHABELA
 }
 
+
 enum SpotType {
   PRAIA
   URBANO
   NATUREZA
+}
+
+model Gastronomy {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  imageUrl    String
+  city        City
 }
