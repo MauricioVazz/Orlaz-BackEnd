@@ -7,6 +7,7 @@ import favoriteRouter from './routers/favoriteRouter.js';
 import restaurantRouter from './routers/restaurantRouter.js';
 import commentRouter from './routers/commentRouter.js';
 import imageRouter from './routers/imageRouter.js';
+import gastronomyRouter from './routers/gastronomyRouter.js';
 
 const app = express();
 const port = 3000;
@@ -20,6 +21,7 @@ app.use('/tourist-spot', touristSpotRouter);
 app.use('/favorite', favoriteRouter);
 app.use('/restaurant', restaurantRouter);
 app.use('/comment', commentRouter);
+app.use('/gastronomy', gastronomyRouter);
 app.use('/image', imageRouter);
 
 app.listen(port, () => {
