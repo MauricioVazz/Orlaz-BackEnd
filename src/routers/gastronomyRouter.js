@@ -4,12 +4,14 @@ import { createGastronomyWithImagesController } from '../controller/gastronomy/c
 import { getByIdGastronomyController } from '../controller/gastronomy/getByIdGastronomyController.js';
 import { editGastronomyController } from '../controller/gastronomy/editGastronomyController.js';
 import { getAllGastronomyController } from '../controller/gastronomy/getAllGastronomyController.js';
+import { getByCategoryGastronomyController } from '../controller/gastronomy/getByCategoryGastronomyController.js';
 import { deleteGastronomyController } from '../controller/gastronomy/deleteGastronomyController.js';
 
 const router = express.Router();
 
 router.post('/', createGastronomyController);
 router.post('/with-images', createGastronomyWithImagesController);
+router.get('/category/:city', getByCategoryGastronomyController);
 router.get('/:id', getByIdGastronomyController);
 router.get('/', getAllGastronomyController);
 router.patch('/:id', editGastronomyController);

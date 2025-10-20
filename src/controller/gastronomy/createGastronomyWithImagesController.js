@@ -34,15 +34,14 @@ export const createGastronomyWithImagesController = [
 
       const images = await Promise.all(uploadPromises);
 
-      // Cria gastronomia com as URLs das imagens
-      // Some Prisma schemas require a top-level imageUrl field (thumbnail/main image).
-      // Use the first uploaded image as the main imageUrl to satisfy the schema.
+      // Use apenas a primeira imagem como imageUrl (o schema de Gastronomy só armazena imageUrl)
+      const imageUrl = images && images.length > 0 ? images[0].url : undefined;
+
       const gastronomyData = {
         name,
         description,
         city,
-        images, // [{ url: ... }, ...]
-        imageUrl: images && images.length > 0 ? images[0].url : undefined
+        imageUrl
       };
 
       // Debugging aid: log payload if running locally so it's easy to see what's being sent to Prisma
