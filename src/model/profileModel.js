@@ -26,6 +26,11 @@ export const update = async (id, data) => {
 }
 
 export const remove = async (id) => {
+    // Remove dependent records that reference the user to avoid foreign key constraint errors.
+    // Currently users can have Favorites (and possibly Comments). Delete those first.
+    await prisma.favorite.deleteMany({ where: { userId: id } });
+    await prisma.comment.deleteMany({ where: { userId: id } });
+
     return await prisma.user.delete({
         where: { id }
     });
