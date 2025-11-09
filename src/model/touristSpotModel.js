@@ -25,6 +25,31 @@ export const list = async () => {
     });
 };
 
+// Search with partial match and pagination. Returns { total, items }
+export const search = async (options = {}) => {
+    const { q, name, city, type, page = 1, limit = 20 } = options;
+
+    const where = {};
+    const searchTerm = q || name;
+    if (searchTerm) {
+        // Use partial match. Note: some Prisma versions or providers don't support `mode: 'insensitive'`.
+        // The database collation often controls case-sensitivity. Remove `mode` for compatibility.
+        where.name = { contains: String(searchTerm) };
+    }
+    if (city) where.city = city;
+    if (type) where.type = type;
+
+    const take = Number(limit) > 0 ? Number(limit) : 20;
+    const skip = (Number(page) > 1 ? (Number(page) - 1) * take : 0);
+
+    const [total, items] = await Promise.all([
+        prisma.touristSpot.count({ where }),
+        prisma.touristSpot.findMany({ where, include: { images: true }, skip, take, orderBy: { createdAt: 'desc' } })
+    ]);
+
+    return { total, items };
+};
+
 export const getById = async (id) => {
     return await prisma.touristSpot.findUnique({
         where: { id },
