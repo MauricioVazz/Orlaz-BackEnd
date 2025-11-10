@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 
 import profileRouter from './routers/profileRouter.js';
+import authRouter from './routers/authRouter.js';
 import touristSpotRouter from './routers/touristSpotRouter.js';
 import favoriteRouter from './routers/favoriteRouter.js';
 import restaurantRouter from './routers/restaurantRouter.js';
@@ -16,6 +17,7 @@ app.use(express.json()); // Middleware para converter JSOn
 app.use(cors());
 
 
+app.use('/auth', authRouter);
 app.use('/profile', profileRouter);
 app.use('/tourist-spot', touristSpotRouter);
 app.use('/favorite', favoriteRouter);

@@ -18,6 +18,12 @@ export const getAll = async () => {
     return await prisma.user.findMany();
 }
 
+export const getByEmail = async (email) => {
+    return await prisma.user.findUnique({
+        where: { email }
+    })
+}
+
 export const update = async (id, data) => {
     return await prisma.user.update({
         where: { id },
@@ -26,8 +32,6 @@ export const update = async (id, data) => {
 }
 
 export const remove = async (id) => {
-    // Remove dependent records that reference the user to avoid foreign key constraint errors.
-    // Currently users can have Favorites (and possibly Comments). Delete those first.
     await prisma.favorite.deleteMany({ where: { userId: id } });
     await prisma.comment.deleteMany({ where: { userId: id } });
 
