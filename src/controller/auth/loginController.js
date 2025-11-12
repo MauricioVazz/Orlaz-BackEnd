@@ -24,7 +24,7 @@ export const loginController = async (req, res) => {
         }
 
         // se estiverem corretos, gerar um token (JWT)
-        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = await jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
         if (!token) {
             return res.status(500).json({ message: 'Erro ao gerar o token de acesso' });
