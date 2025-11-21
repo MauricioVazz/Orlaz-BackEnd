@@ -8,6 +8,8 @@ export const getAllRestaurantController = async (req, res) => {
             restaurants: result
         });
     } catch (error) {
-        res.status(500).json({ error: "Erro ao buscar restaurantes" });
+        console.error('Erro em getAllRestaurantController:', error);
+        const isProd = process.env.NODE_ENV === 'production';
+        return res.status(500).json({ error: isProd ? 'Erro ao buscar restaurantes' : (error.message || String(error)), stack: isProd ? undefined : error.stack });
     }
 };

@@ -37,7 +37,7 @@ export const createRestaurantWithImagesController = [
 
       const images = await Promise.all(uploadPromises);
 
-      // Cria restaurante com as URLs das imagens
+      // Prepare payload for model (only allowed fields)
       const restaurantData = {
         name,
         description,
@@ -47,13 +47,30 @@ export const createRestaurantWithImagesController = [
         ...(website && { website }),
         images // [{ url: ... }, ...]
       };
-      const data = await create(restaurantData);
-      res.status(201).json({
-        mensagem: 'Restaurante criado com sucesso',
-        restaurant: data
-      });
+
+      try {
+        const data = await create(restaurantData);
+        return res.status(201).json({ mensagem: 'Restaurante criado com sucesso', restaurant: data });
+      } catch (error) {
+        // Validation errors from model include `details`
+        if (error && error.details) {
+          return res.status(400).json({ error: error.message || 'Dados inválidos', details: error.details });
+        }
+
+        // Conflict / duplicate
+        if (error && typeof error.message === 'string' && (error.message.includes('Já existe') || error.message.includes('Conflito'))) {
+          return res.status(409).json({ error: error.message });
+        }
+
+        console.error('Erro em createRestaurantWithImagesController (create):', error);
+        const isProd = process.env.NODE_ENV === 'production';
+        return res.status(500).json({ error: isProd ? 'Erro ao criar restaurante' : (error.message || String(error)), stack: isProd ? undefined : error.stack });
+      }
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      // Upload errors are caught earlier, but handle unexpected errors here
+      console.error('Erro em createRestaurantWithImagesController:', error);
+      const isProd = process.env.NODE_ENV === 'production';
+      return res.status(500).json({ error: isProd ? 'Erro ao criar restaurante' : (error.message || String(error)), stack: isProd ? undefined : error.stack });
     }
   }
 ];
