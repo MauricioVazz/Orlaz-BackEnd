@@ -1,4 +1,4 @@
-import { create } from "../../model/profileModel.js";
+import { create, validateProfile } from "../../model/profileModel.js";
 import { getRandomAvatarColor } from "../../utils/avatar.js";
 import bcrypt from 'bcrypt';
 
@@ -6,20 +6,21 @@ export const createProfileController = async (req, res) => {
     try {
         const profile = req.body;
 
-        if (!profile.password) {
-            return res.status(400).json({ error: 'Senha é obrigatória' });
+        // Validate raw input before hashing password
+        const validation = validateProfile(profile, false);
+        if (!validation.success) {
+            return res.status(400).json({ message: 'Dados inválidos', errors: validation.errors });
         }
 
-        // Hash da senha antes de persistir
-        const hashed = await bcrypt.hash(profile.password, 10);
-        profile.password = hashed;
+        // Hash the validated plain password
+        validation.data.password = await bcrypt.hash(validation.data.password, 10);
 
-        profile.avatarColor = getRandomAvatarColor(); // Gera cor aleatória
-        // profile.avatarUrl pode ficar vazio ou com valor padrão
+        // Ensure avatarColor exists
+        validation.data.avatarColor = validation.data.avatarColor || getRandomAvatarColor();
 
-        const data = await create(profile);
-        res.status(201).json({
-            mensagem: "Perfil criado com sucesso",
+        const data = await create(validation.data);
+        return res.status(201).json({
+            mensagem: 'Perfil criado com sucesso',
             profile: {
                 id: data.id,
                 name: data.name,
@@ -31,6 +32,9 @@ export const createProfileController = async (req, res) => {
     } catch (error) {
         console.error('createProfileController error:', error);
         // Tratamento de erros comuns do Prisma para respostas mais úteis
+        if (error && error.message === 'Validation failed' && error.details) {
+            return res.status(400).json({ errors: error.details });
+        }
         if (error && error.code === 'P2002') {
             // Unique constraint failed (ex.: email já cadastrado)
             return res.status(409).json({ error: 'Email já cadastrado' });
