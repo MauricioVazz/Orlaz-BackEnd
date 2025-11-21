@@ -16,51 +16,65 @@ export const createTouristSpotWithImagesController = [
       city = city ? city.trim() : undefined;
       type = type ? type.trim() : undefined;
 
-      let images = [];
+      let imageUrls = [];
+
       // Se for upload via form-data (arquivos)
       if (req.files && req.files.length > 0) {
-        const uploadPromises = req.files.map(file => {
-          return new Promise((resolve, reject) => {
-            cloudinary.uploader.upload_stream(
-              { folder: 'orlaz/touristSpots' },
-              (error, result) => {
-                if (error) reject(error);
-                else resolve({ url: result.secure_url });
-              }
-            ).end(file.buffer);
-          });
-        });
-        images = await Promise.all(uploadPromises);
-      } else if (req.body.images) {
-        // Se for JSON, use o array enviado
         try {
-          images = typeof req.body.images === 'string' ? JSON.parse(req.body.images) : req.body.images;
+          const uploadPromises = req.files.map(file => {
+            return new Promise((resolve, reject) => {
+              cloudinary.uploader.upload_stream(
+                { folder: 'orlaz/touristSpots' },
+                (error, result) => {
+                  if (error) reject(error);
+                  else resolve({ url: result.secure_url });
+                }
+              ).end(file.buffer);
+            });
+          });
+          imageUrls = await Promise.all(uploadPromises);
+        } catch (uploadErr) {
+          return res.status(502).json({ error: 'Falha ao enviar imagens para o provedor de armazenamento.', details: uploadErr.message });
+        }
+      } else if (req.body.images) {
+        // Se for JSON, use o array enviado (pode ser stringified)
+        try {
+          const imgs = typeof req.body.images === 'string' ? JSON.parse(req.body.images) : req.body.images;
+          if (Array.isArray(imgs)) {
+            // imgs can be array of strings or objects { url }
+            imageUrls = imgs.map(i => {
+              if (typeof i === 'string') return { url: i };
+              if (i && i.url) return { url: i.url };
+              return null;
+            }).filter(Boolean);
+          }
         } catch (e) {
           return res.status(400).json({ error: 'Campo images inválido.' });
         }
-        if (!Array.isArray(images)) images = [];
       }
 
-      if (!images || images.length === 0) {
-        return res.status(400).json({ error: 'Nenhuma imagem enviada.' });
-      }
+      // Build payload and call model. Images are optional by business rules.
+      const touristSpotData = { name, description, city, type };
+      const created = await create(touristSpotData, imageUrls.length > 0 ? imageUrls : undefined);
 
-      // O model espera: create(touristSpot, images)
-      const touristSpotData = {
-        name,
-        description,
-        city,
-        type
-      };
-      // O array images deve ser só de urls (string), não objetos
-      const imageUrls = images.map(img => img.url || img);
-      const data = await create(touristSpotData, imageUrls);
-      res.status(201).json({
-        mensagem: 'Ponto turístico criado com sucesso',
-        touristSpot: data
-      });
+      return res.status(201).json({ mensagem: 'Ponto turístico criado com sucesso', touristSpot: created });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      // Validation errors thrown by model include `details`
+      if (error && error.details) {
+        return res.status(400).json({ error: 'Dados inválidos', details: error.details });
+      }
+      // Business conflict (unique)
+      if (error && /existe/i.test(error.message)) {
+        return res.status(409).json({ error: error.message });
+      }
+      // Prisma unique constraint
+      if (error && error.code === 'P2002') {
+        return res.status(409).json({ error: 'Conflito no banco: registro duplicado.' });
+      }
+
+      const payload = { error: error.message };
+      if (process.env.NODE_ENV !== 'production') payload.stack = error.stack;
+      return res.status(500).json(payload);
     }
   }
 ];

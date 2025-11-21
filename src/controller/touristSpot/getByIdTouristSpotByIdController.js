@@ -12,6 +12,9 @@ export const getByIdTouristSpotByIdController = async (req, res) => {
         }
         res.json({ mensagem: "Ponto turístico encontrado com sucesso", touristSpot: result });
     } catch (error) {
-        res.status(500).json({ error: "Erro ao buscar ponto turístico" });
+        console.error('getByIdTouristSpotByIdController error:', error);
+        const payload = { error: 'Erro ao buscar ponto turístico' };
+        if (process.env.NODE_ENV !== 'production') payload.stack = error.stack;
+        res.status(500).json(payload);
     }
 };

@@ -16,6 +16,8 @@ export const searchTouristSpotController = async (req, res) => {
     res.json({ message: 'Busca realizada com sucesso', total: result.total, page: options.page || 1, limit: options.limit || 20, items: result.items });
   } catch (error) {
     console.error('searchTouristSpotController error:', error);
-    res.status(500).json({ error: 'Erro ao buscar pontos turísticos' });
+    const payload = { error: 'Erro ao buscar pontos turísticos' };
+    if (process.env.NODE_ENV !== 'production') payload.stack = error.stack;
+    res.status(500).json(payload);
   }
 };

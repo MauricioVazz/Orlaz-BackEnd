@@ -8,6 +8,9 @@ export const getAllTouristSpotsController = async (req, res) => {
             touristSpots: result
         });
     } catch (error) {
-        res.status(500).json({ error: "Erro ao listar pontos turísticos" });
+        console.error('getAllTouristSpotsController error:', error);
+        const payload = { error: 'Erro ao listar pontos turísticos' };
+        if (process.env.NODE_ENV !== 'production') payload.stack = error.stack;
+        res.status(500).json(payload);
     }
 };
