@@ -1,4 +1,5 @@
 import express from 'express';
+import multer from 'multer';
 import { createGastronomyController } from '../controller/gastronomy/createGastronomyController.js';
 import { createGastronomyWithImagesController } from '../controller/gastronomy/createGastronomyWithImagesController.js';
 import { getByIdGastronomyController } from '../controller/gastronomy/getByIdGastronomyController.js';
@@ -10,13 +11,19 @@ import { authenticator } from '../middleware/authenticator.js';
 import { isAdmin } from '../middleware/isAdmin.js';
 
 const router = express.Router();
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-router.post('/', authenticator, isAdmin, createGastronomyController);
-router.post('/with-images', authenticator, isAdmin, createGastronomyWithImagesController);
+router.post('/', createGastronomyController);
+router.post('/with-images', createGastronomyWithImagesController);
+// router.post('/', authenticator, isAdmin, createGastronomyController);
+// router.post('/with-images', authenticator, isAdmin, createGastronomyWithImagesController);
 router.get('/category/:city', getByCategoryGastronomyController);
 router.get('/:id', getByIdGastronomyController);
 router.get('/', getAllGastronomyController);
-router.patch('/:id', authenticator, isAdmin, editGastronomyController);
-router.delete('/:id', authenticator, isAdmin, deleteGastronomyController);
+router.patch('/:id', upload.any(), editGastronomyController);
+router.delete('/:id', deleteGastronomyController);
+// router.patch('/:id', authenticator, isAdmin, editGastronomyController);
+// router.delete('/:id', authenticator, isAdmin, deleteGastronomyController);
 
 export default router; 
