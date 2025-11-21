@@ -8,6 +8,7 @@ export const getAllProfileController = async (req, res) => {
             profiles: result
         })
     } catch (error) {
+        console.error('getAllProfileController error:', error);
         res.status(500).json({ error: "Erro ao buscar perfis" });
     }
 }
