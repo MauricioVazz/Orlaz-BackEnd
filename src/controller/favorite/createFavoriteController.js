@@ -2,13 +2,29 @@ import { create } from "../../model/favoriteModel.js";
 
 export const createFavoriteController = async (req, res) => {
     try {
-        const { userId, placeId } = req.body;
+        let { userId, placeId } = req.body;
+        userId = Number(userId);
+        placeId = Number(placeId);
+
         const result = await create(userId, placeId);
-        res.status(201).json({
-            message: "Favorito criado com sucesso",
-            favorite: result
-        });
+        return res.status(201).json({ message: 'Favorito criado com sucesso', favorite: result });
     } catch (error) {
-        res.status(500).json({ error: "Erro ao criar favorito" });
+        console.error('createFavoriteController error:', error);
+        // Validation from model contains `details`
+        if (error && error.details) {
+            return res.status(400).json({ error: 'Dados inválidos', details: error.details });
+        }
+        // Not found messages
+        if (error && /não encontrado/i.test(error.message)) {
+            return res.status(404).json({ error: error.message });
+        }
+        // Duplicate / conflict
+        if (error && (/já existe/i.test(error.message) || error.code === 'P2002')) {
+            return res.status(409).json({ error: error.message });
+        }
+
+        const payload = { error: 'Erro ao criar favorito' };
+        if (process.env.NODE_ENV !== 'production') payload.stack = error.stack;
+        return res.status(500).json(payload);
     }
-}
+};
