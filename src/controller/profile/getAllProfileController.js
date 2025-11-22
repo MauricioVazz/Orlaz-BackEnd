@@ -9,6 +9,8 @@ export const getAllProfileController = async (req, res) => {
         })
     } catch (error) {
         console.error('getAllProfileController error:', error);
-        res.status(500).json({ error: "Erro ao buscar perfis" });
+        const payload = { error: 'Erro ao buscar perfis' };
+        if (process.env.NODE_ENV !== 'production') payload.stack = error.stack;
+        res.status(500).json(payload);
     }
 }
