@@ -8,6 +8,12 @@ export const getByUserIdFavoriteController = async (req, res) => {
             return res.status(400).json({ error: 'userId inválido' });
         }
 
+        const requester = req.user || req.userLogged;
+        if (!requester) return res.status(401).json({ error: 'Não autorizado' });
+        if (Number(requester.id) !== numericUserId) {
+            return res.status(403).json({ error: 'Acesso negado: apenas o dono pode ver seus favoritos' });
+        }
+
         const result = await listByUser(numericUserId);
         return res.status(200).json({ message: 'Favoritos do usuário obtidos com sucesso', favorites: result });
     } catch (error) {

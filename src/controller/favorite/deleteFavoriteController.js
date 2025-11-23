@@ -17,7 +17,10 @@ export const deleteFavoriteController = async (req, res) => {
             return res.status(404).json({ error: 'Favorito não encontrado' });
         }
 
-        if (existing.userId !== numericUserId) {
+        // ownership check: only the owner (no admin override) can delete
+        const requester = req.user || req.userLogged;
+        if (!requester) return res.status(401).json({ error: 'Não autorizado' });
+        if (Number(requester.id) !== numericUserId) {
             return res.status(403).json({ error: 'Não autorizado a deletar este favorito' });
         }
 

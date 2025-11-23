@@ -2,9 +2,17 @@ import { create } from "../../model/favoriteModel.js";
 
 export const createFavoriteController = async (req, res) => {
     try {
+        const requester = req.user || req.userLogged;
+        if (!requester) return res.status(401).json({ error: 'Não autorizado' });
+
         let { userId, placeId } = req.body;
         userId = Number(userId);
         placeId = Number(placeId);
+
+        // only allow creating favorite for yourself
+        if (Number(requester.id) !== userId) {
+            return res.status(403).json({ error: 'Apenas o usuário dono pode criar seus favoritos' });
+        }
 
         const result = await create(userId, placeId);
         return res.status(201).json({ message: 'Favorito criado com sucesso', favorite: result });
