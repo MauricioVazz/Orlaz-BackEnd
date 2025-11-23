@@ -6,6 +6,18 @@ export const editProfileController = async (req, res) => {
         const { id } = req.params;
         const profile = req.body;
 
+        // ownership / authorization: only the owner or an ADMIN can edit
+        const requester = req.user || req.userLogged;
+        if (!requester) {
+            return res.status(401).json({ message: 'Não autorizado' });
+        }
+        const requesterId = Number(requester.id);
+        const targetId = Number(id);
+        const requesterRole = requester.role ? String(requester.role).toUpperCase() : 'USER';
+        if (requesterRole !== 'ADMIN' && requesterId !== targetId) {
+            return res.status(403).json({ message: 'Acesso negado: só o proprietário pode editar este perfil' });
+        }
+
         // accept 'pass' as alias for 'password' if provided
         if (profile.pass && !profile.password) {
             profile.password = profile.pass;
