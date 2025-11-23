@@ -14,16 +14,14 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router.post('/', createGastronomyController);
-router.post('/with-images', createGastronomyWithImagesController);
-// router.post('/', authenticator, isAdmin, createGastronomyController);
-// router.post('/with-images', authenticator, isAdmin, createGastronomyWithImagesController);
+// Rotas de criação exigem autenticação e permissão de ADMIN
+router.post('/', authenticator, isAdmin, createGastronomyController);
+router.post('/with-images', authenticator, isAdmin, createGastronomyWithImagesController);
 router.get('/category/:city', getByCategoryGastronomyController);
 router.get('/:id', getByIdGastronomyController);
 router.get('/', getAllGastronomyController);
-router.patch('/:id', upload.any(), editGastronomyController);
-router.delete('/:id', deleteGastronomyController);
-// router.patch('/:id', authenticator, isAdmin, editGastronomyController);
-// router.delete('/:id', authenticator, isAdmin, deleteGastronomyController);
+// Edição/deleção também protegidas por autenticação + admin
+router.patch('/:id', authenticator, isAdmin, upload.single('images'), editGastronomyController);
+router.delete('/:id', authenticator, isAdmin, deleteGastronomyController);
 
 export default router; 
