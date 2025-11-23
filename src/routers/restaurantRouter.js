@@ -6,16 +6,21 @@ import { getByIdRestaurantController } from '../controller/restaurant/getByIdRes
 import { editRestaurantController } from '../controller/restaurant/editRestaurantController.js';
 import { getAllRestaurantController } from '../controller/restaurant/getAllRestaurantController.js';
 import { deleteRestaurantController } from '../controller/restaurant/deleteRestaurantController.js';
+import { authenticator } from '../middleware/authenticator.js';
+import { isAdmin } from '../middleware/isAdmin.js';
 
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router.post('/', createRestaurantController);
-router.post('/with-images', createRestaurantWithImagesController);
+router.post('/', authenticator, isAdmin, createRestaurantController);
+// createRestaurantWithImagesController já aplica multer (upload.array) internamente,
+// portanto não precisamos executar multer aqui para evitar duplicação.
+router.post('/with-images', authenticator, isAdmin, createRestaurantWithImagesController);
 router.get('/:id', getByIdRestaurantController);
 router.get('/', getAllRestaurantController);
-router.patch('/:id', upload.any(), editRestaurantController);
-router.delete('/:id', deleteRestaurantController);
+// aceitar múltiplos arquivos no campo 'images' para edição
+router.patch('/:id', authenticator, isAdmin, upload.array('images'), editRestaurantController);
+router.delete('/:id', authenticator, isAdmin, deleteRestaurantController);
 
 export default router;
