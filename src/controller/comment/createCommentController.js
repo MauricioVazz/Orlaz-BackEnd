@@ -2,11 +2,20 @@ import { create } from "../../model/commentModel.js";
 
 export const createCommentController = async (req, res) => {
     try {
+        // Require authentication and ensure owner
+        const requester = req.user || req.userLogged;
+        if (!requester) return res.status(401).json({ error: 'Não autorizado' });
+
         // Normalize and convert numeric fields
         const raw = { ...req.body };
         if (raw.userId !== undefined) raw.userId = Number(raw.userId);
         if (raw.restaurantId !== undefined) raw.restaurantId = raw.restaurantId ? Number(raw.restaurantId) : undefined;
         if (raw.touristSpotId !== undefined) raw.touristSpotId = raw.touristSpotId ? Number(raw.touristSpotId) : undefined;
+
+        // Only allow creating a comment as the authenticated user
+        if (Number(requester.id) !== raw.userId) {
+            return res.status(403).json({ error: 'Apenas o usuário autenticado pode criar seu comentário' });
+        }
 
         const data = await create(raw);
         return res.status(201).json({ mensagem: 'Comentário criado com sucesso', comment: data });

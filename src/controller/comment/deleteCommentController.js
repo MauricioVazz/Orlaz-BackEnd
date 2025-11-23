@@ -11,9 +11,12 @@ export const deleteCommentController = async (req, res) => {
         const comment = await getById(numericId);
         if (!comment) return res.status(404).json({ error: 'Comentário não encontrado' });
 
-        // Ownership: prefer authenticated user id (req.user.id), otherwise accept body.userId for testing
-        const requesterId = (req.user && req.user.id) ? Number(req.user.id) : (req.body && req.body.userId ? Number(req.body.userId) : null);
-        if (!requesterId || comment.userId !== requesterId) {
+        // Ownership: only owner or admin can delete
+        const requester = req.user || req.userLogged;
+        if (!requester) return res.status(401).json({ error: 'Não autorizado' });
+        const requesterId = Number(requester.id);
+        const requesterRole = requester.role ? String(requester.role).toUpperCase() : 'USER';
+        if (requesterRole !== 'ADMIN' && comment.userId !== requesterId) {
             return res.status(403).json({ error: 'Você só pode deletar seu próprio comentário' });
         }
 

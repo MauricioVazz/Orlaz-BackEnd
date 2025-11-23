@@ -17,9 +17,12 @@ export const editCommentController = async (req, res) => {
         if (body.restaurantId !== undefined) body.restaurantId = body.restaurantId ? Number(body.restaurantId) : undefined;
         if (body.touristSpotId !== undefined) body.touristSpotId = body.touristSpotId ? Number(body.touristSpotId) : undefined;
 
-        // Ownership: prefer checking authenticated user (req.user.id) but fall back to body.userId
-        const requesterId = (req.user && req.user.id) ? Number(req.user.id) : body.userId;
-        if (!requesterId || comment.userId !== requesterId) {
+        // Ownership: only owner or admin can edit
+        const requester = req.user || req.userLogged;
+        if (!requester) return res.status(401).json({ error: 'Não autorizado' });
+        const requesterId = Number(requester.id);
+        const requesterRole = requester.role ? String(requester.role).toUpperCase() : 'USER';
+        if (requesterRole !== 'ADMIN' && comment.userId !== requesterId) {
             return res.status(403).json({ error: 'Você só pode editar seu próprio comentário' });
         }
 
